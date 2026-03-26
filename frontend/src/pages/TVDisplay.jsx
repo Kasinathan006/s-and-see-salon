@@ -8,50 +8,56 @@ const HAIR_STYLES = [
     desc: 'Deep jet black with rich shine',
     filter: 'grayscale(0.2) contrast(1.15) brightness(0.85)',
     overlay: 'rgba(15,12,30,0.25)',
-    badge: '🖤', color: '#333'
+    badge: '🖤', color: '#333',
+    demoImage: 'https://images.unsplash.com/photo-1605980776566-0486c3ac7617?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
   {
     title: 'Caramel Highlights',
     desc: 'Warm caramel sun-kissed tones',
     filter: 'sepia(0.55) saturate(1.6) hue-rotate(12deg) brightness(1.05)',
     overlay: 'rgba(180,120,30,0.12)',
-    badge: '🍯', color: '#C9A84C'
+    badge: '🍯', color: '#C9A84C',
+    demoImage: 'https://images.unsplash.com/photo-1512496015851-a1dc8a478b0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
   {
     title: 'Rose Gold',
     desc: 'Trendy warm rose metallic',
     filter: 'sepia(0.35) saturate(2) hue-rotate(320deg) brightness(1.1)',
     overlay: 'rgba(200,100,100,0.1)',
-    badge: '🌹', color: '#E8A0A0'
+    badge: '🌹', color: '#E8A0A0',
+    demoImage: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
   {
     title: 'Ash Silver',
     desc: 'Cool ash to icy silver tones',
     filter: 'grayscale(0.65) brightness(1.18) contrast(0.92) saturate(0.5)',
     overlay: 'rgba(180,190,200,0.15)',
-    badge: '🌙', color: '#A8B0C0'
+    badge: '🌙', color: '#A8B0C0',
+    demoImage: 'https://images.unsplash.com/photo-1563606775586-353dd6fe6e03?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
   {
     title: 'Deep Burgundy',
     desc: 'Rich bold wine-red luxury',
     filter: 'sepia(0.9) saturate(2.4) hue-rotate(295deg) brightness(0.82)',
     overlay: 'rgba(120,20,40,0.18)',
-    badge: '🍷', color: '#8B1A2C'
+    badge: '🍷', color: '#8B1A2C',
+    demoImage: 'https://images.unsplash.com/photo-1595476108010-b4d1f10d5e6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
   {
     title: 'Copper Bronze',
     desc: 'Warm metallic copper depth',
     filter: 'sepia(0.6) saturate(2) hue-rotate(22deg) brightness(1.02)',
     overlay: 'rgba(180,90,30,0.14)',
-    badge: '🥉', color: '#B05820'
+    badge: '🥉', color: '#B05820',
+    demoImage: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   },
 ]
 
 const FACE_FILTERS = [
-  { title: 'Glass Skin', desc: 'Dewy luminous radiance', filter: 'brightness(1.12) contrast(0.95) saturate(1.1)', overlay: 'rgba(220,240,255,0.08)', badge: '🌟', color: '#80C0FF' },
-  { title: 'Gold Glow', desc: 'Premium gold-infused glow', filter: 'sepia(0.2) brightness(1.1) saturate(1.3)', overlay: 'rgba(201,168,76,0.1)', badge: '✨', color: '#C9A84C' },
-  { title: 'Natural Beauty', desc: 'Soft enhanced natural look', filter: 'brightness(1.06) saturate(1.15) contrast(0.97)', overlay: 'rgba(255,220,200,0.05)', badge: '🌸', color: '#FFB8A0' },
-  { title: 'Matte Finish', desc: 'Flawless matte complexion', filter: 'brightness(0.96) contrast(1.08) saturate(0.9)', overlay: 'rgba(240,230,210,0.06)', badge: '💎', color: '#D4C8B8' },
+  { title: 'Glass Skin', desc: 'Dewy luminous radiance', filter: 'brightness(1.12) contrast(0.95) saturate(1.1)', overlay: 'rgba(220,240,255,0.08)', badge: '🌟', color: '#80C0FF', demoImage: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
+  { title: 'Gold Glow', desc: 'Premium gold-infused glow', filter: 'sepia(0.2) brightness(1.1) saturate(1.3)', overlay: 'rgba(201,168,76,0.1)', badge: '✨', color: '#C9A84C', demoImage: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
+  { title: 'Natural Beauty', desc: 'Soft enhanced natural look', filter: 'brightness(1.06) saturate(1.15) contrast(0.97)', overlay: 'rgba(255,220,200,0.05)', badge: '🌸', color: '#FFB8A0', demoImage: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
+  { title: 'Matte Finish', desc: 'Flawless matte complexion', filter: 'brightness(0.96) contrast(1.08) saturate(0.9)', overlay: 'rgba(240,230,210,0.06)', badge: '💎', color: '#D4C8B8', demoImage: 'https://images.unsplash.com/photo-1526413232644-8a40f41ce931?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
 ]
 
 const FILTER_TABS = [
@@ -313,25 +319,42 @@ export default function TVDisplay() {
             </div>
           </div>
         ) : (
-          /* NO PHOTO: Show placeholder prompt */
+          /* NO PHOTO: Show premium waiting placeholder */
           <div style={{
-            width: 300, flexShrink: 0,
+            width: 380, flexShrink: 0,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             borderRight: '1px solid rgba(201,168,76,0.1)',
-            background: 'rgba(0,0,0,0.2)',
-            padding: 28, gap: 16, textAlign: 'center',
+            background: 'linear-gradient(180deg, rgba(201,168,76,0.05), transparent)',
+            padding: '20px 24px', gap: 24, textAlign: 'center',
           }}>
-            <div style={{
-              width: 80, height: 80, borderRadius: '50%',
-              border: '2px dashed rgba(201,168,76,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Camera size={32} color="rgba(201,168,76,0.4)" />
+            {/* Animated Waiting Pulse */}
+            <div style={{ position: 'relative', width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'absolute', inset: 0, border: '1px solid rgba(201,168,76,0.8)', borderRadius: '50%', animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+              <div style={{ position: 'absolute', inset: 15, border: '1px solid rgba(201,168,76,0.5)', borderRadius: '50%', animation: 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite', animationDelay: '0.4s' }} />
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.05))',
+                border: '1.5px solid rgba(201,168,76,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
+                boxShadow: '0 0 30px rgba(201,168,76,0.2)'
+              }}>
+                <Tv size={36} color="#C9A84C" />
+              </div>
             </div>
-            <p style={{ color: '#555', fontSize: '0.85rem', lineHeight: 1.6 }}>
-              Take a photo on the<br />consultation tablet and<br />click <strong style={{ color: '#C9A84C' }}>"Show on TV"</strong><br />to see live style previews here
-            </p>
-            <Tv size={20} color="rgba(201,168,76,0.3)" />
+
+            <div>
+              <h2 style={{ color: '#C9A84C', margin: '0 0 12px 0', fontSize: '1.4rem', fontFamily: 'Playfair Display, serif', fontWeight: 600 }}>
+                Waiting for Client
+              </h2>
+              <p style={{ color: '#aaa', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
+                Take a photo on the consultation tablet and click
+                <span style={{ color: 'white', fontWeight: 600, background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: 4, margin: '0 6px' }}>View on TV</span>
+                to cast live style previews instantly to this screen.
+              </p>
+            </div>
+
+            {/* Subtle floating camera icon */}
+            <Camera size={24} color="rgba(201,168,76,0.2)" style={{ marginTop: 'auto', marginBottom: 20 }} />
           </div>
         )}
 
@@ -339,21 +362,21 @@ export default function TVDisplay() {
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
 
           {/* Section title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
             <Sparkles size={16} color="#C9A84C" />
-            <span style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>
-              {activeFilter === 'hairstyle' ? 'Hair Style Catalog' : 'Face Treatment Catalog'}
+            <span style={{ fontSize: '0.85rem', color: '#E8D5A3', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700 }}>
+              {activeFilter === 'hairstyle' ? 'Trending Hair Style Catalog' : 'Signature Face Treatment Catalog'}
             </span>
-            <span style={{ fontSize: '0.72rem', color: '#555', marginLeft: 'auto' }}>
-              {filteredStyles.length} styles
+            <span style={{ fontSize: '0.72rem', color: '#666', marginLeft: 'auto' }}>
+              {filteredStyles.length} styles available
             </span>
           </div>
 
           {/* Style grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
-            gap: 14,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 18,
           }}>
             {filteredStyles.map((style, i) => {
               const isActive = i === (selectedStyle % styles.length) && clientPhoto
@@ -364,10 +387,10 @@ export default function TVDisplay() {
                   style={{
                     background: isActive
                       ? 'linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.08))'
-                      : 'rgba(255,255,255,0.04)',
-                    border: `2px solid ${isActive ? '#C9A84C' : 'rgba(201,168,76,0.1)'}`,
-                    borderRadius: 14,
-                    padding: '16px 14px',
+                      : 'rgba(255,255,255,0.02)',
+                    border: `1.5px solid ${isActive ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 16,
+                    padding: '16px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     boxShadow: isActive ? `0 0 20px ${style.color}44` : 'none',
@@ -375,26 +398,15 @@ export default function TVDisplay() {
                     overflow: 'hidden',
                   }}
                 >
-                  {/* Photo preview with filter (if client photo exists) */}
-                  {clientPhoto ? (
-                    <div style={{ position: 'relative', width: '100%', aspectRatio: '3/2', borderRadius: 8, overflow: 'hidden', marginBottom: 10, border: `1.5px solid ${isActive ? '#C9A84C' : 'rgba(201,168,76,0.15)'}` }}>
-                      <img
-                        src={clientPhoto}
-                        alt={style.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', filter: style.filter, transition: 'filter 0.8s ease' }}
-                      />
-                      <div style={{ position: 'absolute', inset: 0, background: style.overlay, pointerEvents: 'none' }} />
-                    </div>
-                  ) : (
-                    <div style={{
-                      width: '100%', aspectRatio: '3/2', borderRadius: 8,
-                      background: `linear-gradient(135deg, ${style.color}22, ${style.color}44)`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 10, fontSize: '2.2rem',
-                    }}>
-                      {style.badge}
-                    </div>
-                  )}
+                  {/* Photo preview with filter (if client photo exists, else use demo image) */}
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '3/2', borderRadius: 10, overflow: 'hidden', marginBottom: 14, border: `1px solid ${isActive ? '#C9A84C' : 'rgba(255,255,255,0.05)'}` }}>
+                    <img
+                      src={clientPhoto || style.demoImage}
+                      alt={style.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', filter: style.filter, transition: 'filter 0.8s ease' }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: style.overlay, pointerEvents: 'none' }} />
+                  </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <span style={{ fontSize: '1.1rem' }}>{style.badge}</span>
