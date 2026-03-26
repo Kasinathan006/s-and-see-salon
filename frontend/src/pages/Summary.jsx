@@ -9,7 +9,7 @@ export default function Summary() {
   const { client, consultation, selectedServices, aiResponses } = useClient()
 
   const total = selectedServices.reduce((sum, s) => sum + s.price, 0)
-  const accuracyScore = 9.5
+  const accuracyScore = consultation?.accuracy_score || 9.5
 
   const generatePDF = () => {
     const doc = new jsPDF()

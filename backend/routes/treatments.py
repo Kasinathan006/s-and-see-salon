@@ -73,5 +73,32 @@ def update_progress(treatment_id: int, data: ProgressUpdate, db: Session = Depen
             if data.missed_reason:
                 session.missed_reason = data.missed_reason
 
-    db.commit()
-    return {"status": "updated"}
+@router.get("/treatments/client/{client_id}")
+def get_client_treatment(client_id: int, db: Session = Depends(get_db)):
+    plan = db.query(TreatmentPlan).filter(
+        TreatmentPlan.client_id == client_id
+    ).order_by(TreatmentPlan.created_at.desc()).first()
+    
+    if not plan:
+        # For demo purposes, create a default plan if none exists
+        from models import Client
+        client = db.query(Client).filter(Client.id == client_id).first()
+        plan = TreatmentPlan(
+            client_id=client_id,
+            name="Signature Scalp Renewal" if not client else f"{client.name}'s Hair Therapy",
+            category="hair",
+            total_weeks=8
+        )
+        db.add(plan)
+        db.commit()
+        db.refresh(plan)
+        # Create sessions
+        for week in range(1, 9):
+            db.add(TreatmentSession(plan_id=plan.id, week=week))
+        db.commit()
+
+    sessions = db.query(TreatmentSession).filter(
+        TreatmentSession.plan_id == plan.id
+    ).order_by(TreatmentSession.week).all()
+
+    return {"plan": plan, "sessions": sessions}

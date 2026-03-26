@@ -518,6 +518,65 @@ h3 {
 .timeline-item {
   position: relative;
   padding-bottom: 24px;
+  display: flex;
+  gap: 16px;
+}
+
+.timeline-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  background: white;
+  color: var(--gray-300);
+}
+
+.timeline-item.completed .timeline-icon {
+  color: var(--success);
+}
+
+.timeline-item.active .timeline-icon {
+  color: var(--gold);
+}
+
+.timeline-content {
+  flex: 1;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+.timeline-item.active .timeline-content {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.03);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-primary {
+  background: var(--gold-light);
+  color: var(--gold-dark);
+}
+
+.badge-success {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.badge-secondary {
+  background: var(--gray-200);
+  color: var(--gray-500);
 }
 
 .timeline-dot {

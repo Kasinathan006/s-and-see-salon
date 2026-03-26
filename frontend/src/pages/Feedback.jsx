@@ -3,21 +3,36 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Star, Video, Send } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
 import toast from 'react-hot-toast'
+import { submitFeedback } from '../utils/api'
 
 export default function Feedback() {
   const navigate = useNavigate()
-  const { client } = useClient()
+  const { client, consultation } = useClient()
   const [rating, setRating] = useState(0)
   const [text, setText] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       toast.error('Please select a rating')
       return
     }
-    setSubmitted(true)
-    toast.success('Thank you for your feedback!')
+
+    try {
+      if (client?.id) {
+        await submitFeedback({
+          client_id: client.id,
+          consultation_id: consultation?.id || null,
+          rating: rating,
+          feedback_text: text
+        })
+      }
+      setSubmitted(true)
+      toast.success('Thank you for your feedback!')
+    } catch (err) {
+      toast.error('Could not save to server. Thank you anyway!')
+      setSubmitted(true)
+    }
   }
 
   if (submitted) {
@@ -76,8 +91,8 @@ export default function Feedback() {
           {rating > 0 && (
             <p style={{ fontSize: '0.85rem', color: '#A88B3D', marginTop: 4 }}>
               {rating <= 2 ? 'We\'re sorry to hear that. Please tell us how we can improve.' :
-               rating <= 4 ? 'Thank you! We\'d love to know what we can do better.' :
-               'Wonderful! We\'re thrilled you had a great experience!'}
+                rating <= 4 ? 'Thank you! We\'d love to know what we can do better.' :
+                  'Wonderful! We\'re thrilled you had a great experience!'}
             </p>
           )}
         </div>

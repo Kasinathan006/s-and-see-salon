@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Camera, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
+import { startConsultation, submitAnswers, chatWithAI, updateConsultation } from '../utils/api'
 
 const CONSULTATION_FLOW = {
   hair: {
@@ -237,7 +238,7 @@ const RECOMMENDATIONS = {
 
 export default function Consultation() {
   const navigate = useNavigate()
-  const { consultation, setAiResponses } = useClient()
+  const { client, consultation, setConsultation, setAiResponses } = useClient()
   const category = consultation?.category || 'hair'
   const flow = CONSULTATION_FLOW[category]
 
@@ -289,15 +290,66 @@ export default function Consultation() {
     }
   }
 
-  const generateResult = (finalAnswers) => {
+  const generateResult = async (finalAnswers) => {
     setShowResult(true)
     const summary = Object.entries(finalAnswers)
       .map(([key, val]) => `${key.replace(/_/g, ' ')}: ${val}`)
       .join('\n')
-    setAiResponses(prev => [...prev, {
-      question: 'Consultation Summary',
-      answer: summary
-    }])
+
+    // Save consultation + answers to backend
+    try {
+      // Create consultation if client is registered
+      if (client?.id && typeof client.id === 'number') {
+        const consRes = await startConsultation({
+          client_id: client.id,
+          category: category
+        })
+        const consId = consRes.data.id
+        setConsultation(prev => ({ ...prev, id: consId }))
+
+        // Save all answers
+        const answerPayload = Object.entries(finalAnswers).map(([key, val]) => ({
+          role: 'user',
+          content: `${key.replace(/_/g, ' ')}: ${val}`
+        }))
+        await submitAnswers(consId, { answers: answerPayload })
+      }
+    } catch (err) {
+      console.log('Backend save skipped:', err.message)
+    }
+
+    // Call AI chat for smart recommendation summary
+    try {
+      const aiRes = await chatWithAI({
+        message: `Based on this consultation: ${summary}. Give a brief recommendation.`,
+        category: category,
+        client_name: client?.name,
+        client_age: client?.age,
+        client_gender: client?.gender
+      })
+
+      const aiResponseText = aiRes.data.response || summary
+
+      setAiResponses(prev => [...prev, {
+        question: 'AI Consultation Summary',
+        answer: aiResponseText
+      }])
+
+      // Update consultation with the AI summary in backend
+      if (consultation?.id) {
+        await updateConsultation(consultation.id, {
+          ai_summary: aiResponseText,
+          status: 'completed'
+        })
+      }
+    } catch (err) {
+      console.error('AI Summary Error:', err)
+      // Fallback if AI endpoint fails
+      setAiResponses(prev => [...prev, {
+        question: 'Consultation Summary',
+        answer: summary
+      }])
+    }
   }
 
   const getRecommendations = () => {

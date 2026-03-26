@@ -1,21 +1,25 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera, RotateCcw, Monitor, Upload } from 'lucide-react'
+import { ArrowLeft, Camera, RotateCcw, Monitor, Upload, Loader } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
+import { updateClientPhoto } from '../utils/api'
 import toast from 'react-hot-toast'
 
 export default function PhotoCapture() {
   const navigate = useNavigate()
-  const { setCapturedPhoto, consultation } = useClient()
+  const { setCapturedPhoto, consultation, client } = useClient()
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const fileInputRef = useRef(null)
   const streamRef = useRef(null)
   const [photo, setPhoto] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
   const [facingMode, setFacingMode] = useState('user')
+  const [uploading, setUploading] = useState(false)
 
   const category = consultation?.category || 'hair'
+
 
   // Core camera start function
   const startCamera = async (facing = 'user') => {
@@ -37,22 +41,28 @@ export default function PhotoCapture() {
 
       streamRef.current = mediaStream
       setFacingMode(facing)
+      setCameraError(null)
 
-      // Directly attach to video element
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream
         videoRef.current.onloadedmetadata = () => {
           videoRef.current.play().then(() => {
             setCameraReady(true)
           }).catch(() => {
-            setCameraReady(true) // Still show even if autoplay has issues
+            setCameraReady(true)
           })
         }
       }
     } catch (err) {
       console.error('Camera error:', err)
       setCameraReady(false)
-      toast.error('Camera access denied — use Upload instead')
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setCameraError('permission')
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setCameraError('notfound')
+      } else {
+        setCameraError('unknown')
+      }
     }
   }
 
@@ -82,7 +92,7 @@ export default function PhotoCapture() {
     }
   }, [])
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return
     const canvas = canvasRef.current
     const video = videoRef.current
@@ -97,10 +107,26 @@ export default function PhotoCapture() {
     }
     ctx.drawImage(video, 0, 0)
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+
     setPhoto(dataUrl)
     setCapturedPhoto(dataUrl)
     stopCamera()
-    toast.success('Photo captured! ✨')
+
+    // Sync to backend if client exists
+    if (client?.id) {
+      setUploading(true)
+      try {
+        await updateClientPhoto(client.id, dataUrl)
+        toast.success('Photo saved to your profile! ✨')
+      } catch (err) {
+        console.error('Photo upload error:', err)
+        toast.error('Could not save photo to server')
+      } finally {
+        setUploading(false)
+      }
+    } else {
+      toast.success('Photo captured! ✨')
+    }
   }
 
   const switchCamera = () => {
@@ -113,6 +139,23 @@ export default function PhotoCapture() {
     startCamera(facingMode)
   }
 
+
+  const handleShowOnTV = () => {
+    if (photo) {
+      localStorage.setItem('salon_tv_photo', photo)
+      localStorage.setItem('salon_tv_category', category)
+      localStorage.setItem('salon_tv_client_name', client?.name || 'Guest')
+      toast.success('Sending to TV display... 📺')
+    }
+    // Open on SAME origin (same port) so localStorage is shared
+    const tvUrl = `${window.location.origin}/tv`
+    const opened = window.open(tvUrl, 'salon_tv')
+    if (opened) {
+      setTimeout(() => opened.focus(), 300)
+    }
+  }
+
+
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -121,11 +164,25 @@ export default function PhotoCapture() {
       return
     }
     const reader = new FileReader()
-    reader.onload = (event) => {
-      setPhoto(event.target.result)
-      setCapturedPhoto(event.target.result)
+    reader.onload = async (event) => {
+      const dataUrl = event.target.result
+      setPhoto(dataUrl)
+      setCapturedPhoto(dataUrl)
       stopCamera()
-      toast.success('Photo uploaded! ✨')
+
+      if (client?.id) {
+        setUploading(true)
+        try {
+          await updateClientPhoto(client.id, dataUrl)
+          toast.success('Photo uploaded to your profile! ✨')
+        } catch (err) {
+          console.error('Photo upload error:', err)
+        } finally {
+          setUploading(false)
+        }
+      } else {
+        toast.success('Photo uploaded! ✨')
+      }
     }
     reader.readAsDataURL(file)
   }
@@ -163,18 +220,68 @@ export default function PhotoCapture() {
                   display: cameraReady ? 'block' : 'none'
                 }}
               />
-              {/* Loading overlay while camera initializes */}
+              {/* Loading / Error overlay */}
               {!cameraReady && (
                 <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  color: '#C9A84C'
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', height: '100%', padding: 20, textAlign: 'center'
                 }}>
-                  <div className="camera-spinner" />
-                  <p style={{ marginTop: 16, fontSize: '0.9rem' }}>Opening camera...</p>
+                  {cameraError === 'permission' ? (
+                    <>
+                      <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔒</div>
+                      <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>
+                        Camera Access Blocked
+                      </p>
+                      <p style={{ color: '#888', fontSize: '0.78rem', lineHeight: 1.7, marginBottom: 16 }}>
+                        To allow camera access:<br />
+                        1. Click the <strong style={{ color: '#C9A84C' }}>🔒 lock icon</strong> in your browser address bar<br />
+                        2. Set <strong style={{ color: '#C9A84C' }}>Camera → Allow</strong><br />
+                        3. Refresh the page
+                      </p>
+                      <button
+                        onClick={() => { setCameraError(null); startCamera(facingMode) }}
+                        style={{
+                          background: 'linear-gradient(135deg, #C9A84C, #A88B3D)',
+                          color: '#1A1A2E', border: 'none', borderRadius: 10,
+                          padding: '10px 20px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem'
+                        }}
+                      >
+                        🔄 Retry Camera
+                      </button>
+                    </>
+                  ) : cameraError === 'notfound' ? (
+                    <>
+                      <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📷</div>
+                      <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>
+                        No Camera Found
+                      </p>
+                      <p style={{ color: '#888', fontSize: '0.78rem', lineHeight: 1.7 }}>
+                        No camera device detected.<br />Please use <strong>Upload from Gallery</strong> below.
+                      </p>
+                    </>
+                  ) : cameraError ? (
+                    <>
+                      <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>⚠️</div>
+                      <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>
+                        Camera Error
+                      </p>
+                      <button
+                        onClick={() => { setCameraError(null); startCamera(facingMode) }}
+                        style={{
+                          background: 'linear-gradient(135deg, #C9A84C, #A88B3D)',
+                          color: '#1A1A2E', border: 'none', borderRadius: 10,
+                          padding: '10px 20px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem'
+                        }}
+                      >
+                        🔄 Retry Camera
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="camera-spinner" />
+                      <p style={{ marginTop: 16, fontSize: '0.9rem', color: '#C9A84C' }}>Opening camera...</p>
+                    </>
+                  )}
                 </div>
               )}
               {/* Switch camera button (visible when camera is active) */}
@@ -223,15 +330,45 @@ export default function PhotoCapture() {
             <button
               className="btn btn-primary"
               onClick={capturePhoto}
-              disabled={!cameraReady}
-              style={{ opacity: cameraReady ? 1 : 0.5 }}
+              disabled={!cameraReady || uploading}
+              style={{ opacity: cameraReady && !uploading ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Camera size={18} /> {cameraReady ? 'Capture Photo' : 'Waiting for camera...'}
+              {uploading ? <Loader size={18} className="spin" /> : <Camera size={18} />}
+              <span style={{ marginLeft: 8 }}>{cameraReady ? 'Capture Photo' : 'Waiting for camera...'}</span>
             </button>
           )}
         </div>
 
-        {/* Upload fallback — always available */}
+        {/* View on TV — shown directly below Retake/Continue after photo is taken */}
+        {photo && (
+          <button
+            onClick={handleShowOnTV}
+            style={{
+              marginTop: 10,
+              width: '100%',
+              padding: '13px 20px',
+              background: 'linear-gradient(135deg, #1A1A2E 0%, #0F3460 100%)',
+              color: '#C9A84C',
+              border: '2px solid #C9A84C',
+              borderRadius: 14,
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              fontFamily: 'Inter, sans-serif',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              letterSpacing: 0.5,
+              boxShadow: '0 4px 16px rgba(201,168,76,0.25)',
+            }}
+          >
+            <Monitor size={20} />
+            View on TV
+          </button>
+        )}
+
+
         {!photo && (
           <button
             className="btn btn-outline btn-sm"
@@ -241,6 +378,7 @@ export default function PhotoCapture() {
             <Upload size={16} /> Upload from Gallery
           </button>
         )}
+
 
         {/* AI Suggestions after photo capture */}
         {photo && (
@@ -254,9 +392,10 @@ export default function PhotoCapture() {
           </div>
         )}
 
+
         <button
           className="btn btn-secondary"
-          style={{ marginTop: 16 }}
+          style={{ marginTop: 12 }}
           onClick={() => navigate('/summary')}
         >
           Skip to Summary

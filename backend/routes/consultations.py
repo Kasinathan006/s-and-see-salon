@@ -13,6 +13,13 @@ class ConsultationCreate(BaseModel):
     category: str
 
 
+class ConsultationUpdate(BaseModel):
+    status: Optional[str] = None
+    ai_summary: Optional[str] = None
+    accuracy_score: Optional[float] = None
+    photo_url: Optional[str] = None
+
+
 class AnswerSubmit(BaseModel):
     answers: List[dict]
 
@@ -24,6 +31,20 @@ def create_consultation(data: ConsultationCreate, db: Session = Depends(get_db))
     db.commit()
     db.refresh(consultation)
     return consultation
+
+
+@router.put("/consultations/{consultation_id}")
+def update_consultation(consultation_id: int, data: ConsultationUpdate, db: Session = Depends(get_db)):
+    cons = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+    if not cons:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(cons, key, value)
+    
+    db.commit()
+    db.refresh(cons)
+    return cons
 
 
 @router.get("/consultations/{consultation_id}")

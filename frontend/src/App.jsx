@@ -1,5 +1,6 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { Home, MessageSquare, Calendar, BarChart3 } from 'lucide-react'
+import { Toaster } from 'react-hot-toast'
 import Welcome from './pages/Welcome'
 import Register from './pages/Register'
 import CategorySelect from './pages/CategorySelect'
@@ -20,6 +21,7 @@ function App() {
 
   return (
     <div className={`app-container ${isTVMode ? 'tv-mode' : ''}`}>
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/register" element={<Register />} />

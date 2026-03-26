@@ -14,6 +14,8 @@ class Client(Base):
     mobile = Column(String(15), unique=True, nullable=False, index=True)
     email = Column(String(100))
     whatsapp = Column(String(15))
+    region = Column(String(50))
+    photo_url = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     consultations = relationship("Consultation", back_populates="client")
@@ -31,6 +33,7 @@ class Consultation(Base):
     status = Column(String(20), default="active")
     ai_summary = Column(Text)
     accuracy_score = Column(Float, default=9.5)
+    photo_url = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     client = relationship("Client", back_populates="consultations")

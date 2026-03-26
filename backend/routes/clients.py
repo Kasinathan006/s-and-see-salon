@@ -15,6 +15,8 @@ class ClientCreate(BaseModel):
     mobile: str
     email: Optional[str] = None
     whatsapp: Optional[str] = None
+    region: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class ClientResponse(BaseModel):
@@ -25,6 +27,8 @@ class ClientResponse(BaseModel):
     mobile: str
     email: Optional[str]
     whatsapp: Optional[str]
+    region: Optional[str]
+    photo_url: Optional[str]
 
     class Config:
         from_attributes = True
@@ -46,6 +50,16 @@ def create_client(client: ClientCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_client)
     return db_client
+
+
+@router.put("/clients/{client_id}/photo")
+def update_client_photo(client_id: int, photo_data: dict, db: Session = Depends(get_db)):
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    client.photo_url = photo_data.get("photo_url")
+    db.commit()
+    return {"status": "success", "photo_url": client.photo_url}
 
 
 @router.get("/clients/{client_id}", response_model=ClientResponse)

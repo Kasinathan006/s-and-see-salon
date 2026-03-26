@@ -20,46 +20,66 @@ export default function CategorySelect() {
   }
 
   return (
-    <div>
-      <div className="header">
-        <div className="header-logo">S&S</div>
-        <div>
-          <h1>Welcome, {client?.name || 'Guest'}</h1>
-          <p>What would you like help with today?</p>
+    <div className="min-h-screen bg-white">
+      <div className="header shadow-sm">
+        <div className="header-logo shadow-inner">S&S</div>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold tracking-tight">Welcome, {client?.name?.split(' ')[0] || 'Guest'}</h1>
+          <p className="opacity-90">What brings you in today?</p>
         </div>
       </div>
 
-      <div className="page">
-        <h2 style={{ fontSize: '1.3rem', marginBottom: 8 }}>Choose Your Category</h2>
-        <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: 8 }}>
-          Our AI consultant will guide you through personalized recommendations
-        </p>
+      <div className="page max-w-lg mx-auto">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-dark mb-2">Service Categories</h2>
+          <p className="text-sm text-gray-500">
+            Select a focus area to start your proprietary AI analysis.
+          </p>
+        </div>
 
-        <div className="category-grid">
+        <div className="grid gap-4 mb-10">
           {categories.map(cat => (
             <div
               key={cat.id}
-              className={`category-card ${selected === cat.id ? 'active' : ''}`}
+              className={`flex items-center gap-5 p-5 rounded-3xl border-2 transition-all cursor-pointer group
+                ${selected === cat.id
+                  ? 'border-gold bg-gold/5 shadow-md shadow-gold/10'
+                  : 'border-gray-100 bg-gray-50/50 hover:border-gold-light hover:bg-white'}`}
               onClick={() => setSelected(cat.id)}
             >
-              <div className="category-icon">{cat.icon}</div>
-              <h3>{cat.label}</h3>
-              <p style={{ fontSize: '0.7rem', color: '#888', marginTop: 4 }}>{cat.desc}</p>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm transition-transform group-hover:scale-110
+                ${selected === cat.id ? 'bg-gold text-white' : 'bg-white'}`}>
+                {cat.icon}
+              </div>
+              <div className="flex-1">
+                <h3 className={`font-bold text-lg mb-0.5 ${selected === cat.id ? 'text-dark' : 'text-gray-700'}`}>
+                  {cat.label}
+                </h3>
+                <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
+                  {cat.desc}
+                </p>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
+                ${selected === cat.id ? 'border-gold bg-gold text-white' : 'border-gray-200'}`}>
+                {selected === cat.id && <CheckCircle2 size={14} />}
+              </div>
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: 12, textAlign: 'center' }}>
-            For: Men, Women & Kids
-          </p>
+        <div className="space-y-4">
           <button
-            className="btn btn-primary"
+            className="btn btn-primary py-5 text-lg font-bold shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-2 group"
             disabled={!selected}
             onClick={handleContinue}
           >
-            Start AI Consultation
+            Start Analysis
+            <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
           </button>
+
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
+            Specialized for: Men • Women • Kids
+          </p>
         </div>
       </div>
     </div>
