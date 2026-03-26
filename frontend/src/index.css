@@ -544,3 +544,71 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; }
   color: var(--dark);
   font-weight: 600;
 }
+
+/* Option Chips for Consultation */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.option-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.option-chip:hover {
+  border-color: var(--gold-light);
+  background: rgba(201,168,76,0.03);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.option-chip.selected {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.15));
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+.option-chip:active {
+  transform: scale(0.97);
+}
+
+.option-emoji {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-100);
+  border-radius: 10px;
+}
+
+.option-chip.selected .option-emoji {
+  background: rgba(201,168,76,0.2);
+}
+
+.option-label {
+  font-weight: 500;
+  color: var(--dark);
+  flex: 1;
+}
+
+.option-check {
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}

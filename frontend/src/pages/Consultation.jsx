@@ -1,125 +1,484 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Send, Camera } from 'lucide-react'
+import { ArrowLeft, Camera, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
-import { chatWithAI } from '../utils/api'
 
-const INITIAL_MESSAGES = {
-  hair: "Hello! I'm your AI Hair Consultant at S & See Signature Salon. I'd love to help you find the perfect hair solution. Could you tell me:\n\n1. What's your current hair type? (straight, wavy, curly, coily)\n2. Any specific concerns? (hair fall, dandruff, dryness, damage)\n3. What are you looking for today? (haircut, coloring, treatment, styling)",
-  skin: "Hello! I'm your AI Skin Consultant at S & See Signature Salon. Let me help you achieve your best skin. Could you share:\n\n1. What's your skin type? (oily, dry, combination, sensitive)\n2. Any specific concerns? (acne, pigmentation, aging, dullness)\n3. What results are you hoping for? (glow, anti-aging, spot reduction, hydration)",
-  scalp: "Hello! I'm your AI Scalp Health Consultant at S & See Signature Salon. Let's assess your scalp health. Could you tell me:\n\n1. Do you experience any scalp issues? (itching, flaking, oiliness, dryness)\n2. How often do you wash your hair?\n3. Any history of hair loss or thinning?"
+const CONSULTATION_FLOW = {
+  hair: {
+    title: 'AI Hair Consultant',
+    subtitle: 'Personalized recommendations powered by AI',
+    steps: [
+      {
+        id: 'hair_type',
+        question: "What's your hair type?",
+        options: [
+          { label: 'Straight', emoji: '🔳', value: 'straight' },
+          { label: 'Wavy', emoji: '🌊', value: 'wavy' },
+          { label: 'Curly', emoji: '🌀', value: 'curly' },
+          { label: 'Coily', emoji: '➰', value: 'coily' },
+        ]
+      },
+      {
+        id: 'hair_concern',
+        question: "What's your main concern?",
+        multiSelect: true,
+        options: [
+          { label: 'Hair Fall', emoji: '😟', value: 'hair fall' },
+          { label: 'Dandruff', emoji: '❄️', value: 'dandruff' },
+          { label: 'Dryness', emoji: '🏜️', value: 'dryness' },
+          { label: 'Damage', emoji: '⚡', value: 'damage' },
+          { label: 'Split Ends', emoji: '✂️', value: 'split ends' },
+          { label: 'Frizz', emoji: '💨', value: 'frizz' },
+        ]
+      },
+      {
+        id: 'hair_goal',
+        question: "What are you looking for today?",
+        options: [
+          { label: 'Haircut', emoji: '✂️', value: 'haircut' },
+          { label: 'Coloring', emoji: '🎨', value: 'coloring' },
+          { label: 'Treatment', emoji: '💆', value: 'treatment' },
+          { label: 'Styling', emoji: '💇', value: 'styling' },
+          { label: 'Keratin', emoji: '✨', value: 'keratin' },
+          { label: 'Rebonding', emoji: '🪄', value: 'rebonding' },
+        ]
+      },
+      {
+        id: 'hair_length',
+        question: "What's your current hair length?",
+        options: [
+          { label: 'Short', emoji: '📏', value: 'short' },
+          { label: 'Medium', emoji: '📐', value: 'medium' },
+          { label: 'Long', emoji: '📎', value: 'long' },
+          { label: 'Very Long', emoji: '🧵', value: 'very long' },
+        ]
+      },
+      {
+        id: 'hair_budget',
+        question: "What's your budget range?",
+        options: [
+          { label: '₹200 - ₹500', emoji: '💰', value: 'budget' },
+          { label: '₹500 - ₹1500', emoji: '💎', value: 'mid-range' },
+          { label: '₹1500 - ₹3000', emoji: '👑', value: 'premium' },
+          { label: '₹3000+', emoji: '🌟', value: 'luxury' },
+        ]
+      }
+    ]
+  },
+  skin: {
+    title: 'AI Skin Consultant',
+    subtitle: 'Personalized skincare recommendations',
+    steps: [
+      {
+        id: 'skin_type',
+        question: "What's your skin type?",
+        options: [
+          { label: 'Oily', emoji: '💧', value: 'oily' },
+          { label: 'Dry', emoji: '🏜️', value: 'dry' },
+          { label: 'Combination', emoji: '🔀', value: 'combination' },
+          { label: 'Sensitive', emoji: '🌸', value: 'sensitive' },
+          { label: 'Normal', emoji: '✅', value: 'normal' },
+        ]
+      },
+      {
+        id: 'skin_concern',
+        question: "What are your skin concerns?",
+        multiSelect: true,
+        options: [
+          { label: 'Acne', emoji: '😣', value: 'acne' },
+          { label: 'Pigmentation', emoji: '🟤', value: 'pigmentation' },
+          { label: 'Aging', emoji: '⏳', value: 'aging' },
+          { label: 'Dullness', emoji: '😶', value: 'dullness' },
+          { label: 'Dark Circles', emoji: '👁️', value: 'dark circles' },
+          { label: 'Tan', emoji: '☀️', value: 'tan' },
+        ]
+      },
+      {
+        id: 'skin_goal',
+        question: "What result do you want?",
+        options: [
+          { label: 'Glow & Radiance', emoji: '✨', value: 'glow' },
+          { label: 'Anti-Aging', emoji: '🔄', value: 'anti-aging' },
+          { label: 'Spot Reduction', emoji: '🎯', value: 'spot reduction' },
+          { label: 'Deep Hydration', emoji: '💦', value: 'hydration' },
+          { label: 'Skin Brightening', emoji: '🌟', value: 'brightening' },
+          { label: 'Pore Tightening', emoji: '🔬', value: 'pore tightening' },
+        ]
+      },
+      {
+        id: 'skin_budget',
+        question: "What's your budget range?",
+        options: [
+          { label: '₹300 - ₹800', emoji: '💰', value: 'budget' },
+          { label: '₹800 - ₹2000', emoji: '💎', value: 'mid-range' },
+          { label: '₹2000 - ₹5000', emoji: '👑', value: 'premium' },
+          { label: '₹5000+', emoji: '🌟', value: 'luxury' },
+        ]
+      }
+    ]
+  },
+  scalp: {
+    title: 'AI Scalp Consultant',
+    subtitle: 'Scalp health assessment',
+    steps: [
+      {
+        id: 'scalp_issue',
+        question: "What scalp issues do you experience?",
+        multiSelect: true,
+        options: [
+          { label: 'Itching', emoji: '😖', value: 'itching' },
+          { label: 'Flaking', emoji: '❄️', value: 'flaking' },
+          { label: 'Oiliness', emoji: '💧', value: 'oiliness' },
+          { label: 'Dryness', emoji: '🏜️', value: 'dryness' },
+          { label: 'Redness', emoji: '🔴', value: 'redness' },
+          { label: 'Odour', emoji: '👃', value: 'odour' },
+        ]
+      },
+      {
+        id: 'wash_frequency',
+        question: "How often do you wash your hair?",
+        options: [
+          { label: 'Daily', emoji: '📅', value: 'daily' },
+          { label: 'Every 2 Days', emoji: '2️⃣', value: 'every 2 days' },
+          { label: 'Twice a Week', emoji: '✌️', value: 'twice a week' },
+          { label: 'Once a Week', emoji: '1️⃣', value: 'once a week' },
+        ]
+      },
+      {
+        id: 'hair_loss',
+        question: "Any hair loss or thinning?",
+        options: [
+          { label: 'No Hair Loss', emoji: '✅', value: 'no' },
+          { label: 'Mild Thinning', emoji: '⚠️', value: 'mild' },
+          { label: 'Moderate Loss', emoji: '😟', value: 'moderate' },
+          { label: 'Heavy Loss', emoji: '🚨', value: 'heavy' },
+        ]
+      },
+      {
+        id: 'scalp_budget',
+        question: "What's your budget range?",
+        options: [
+          { label: '₹300 - ₹600', emoji: '💰', value: 'budget' },
+          { label: '₹600 - ₹1500', emoji: '💎', value: 'mid-range' },
+          { label: '₹1500 - ₹3000', emoji: '👑', value: 'premium' },
+          { label: '₹3000+', emoji: '🌟', value: 'luxury' },
+        ]
+      }
+    ]
+  }
+}
+
+const RECOMMENDATIONS = {
+  hair: {
+    haircut: [
+      { name: 'Classic Haircut', price: '₹300', time: '30 min' },
+      { name: 'Layered Cut', price: '₹500', time: '45 min' },
+      { name: 'Premium Styling Cut', price: '₹800', time: '60 min' },
+    ],
+    coloring: [
+      { name: 'Global Color', price: '₹1500', time: '90 min' },
+      { name: 'Highlights', price: '₹2000', time: '120 min' },
+      { name: 'Balayage', price: '₹3500', time: '150 min' },
+    ],
+    treatment: [
+      { name: 'Deep Conditioning', price: '₹600', time: '45 min' },
+      { name: 'Hair Spa', price: '₹900', time: '60 min' },
+      { name: 'Protein Treatment', price: '₹1200', time: '75 min' },
+    ],
+    styling: [
+      { name: 'Blow Dry', price: '₹300', time: '30 min' },
+      { name: 'Iron Styling', price: '₹500', time: '45 min' },
+      { name: 'Bridal Styling', price: '₹3000', time: '120 min' },
+    ],
+    keratin: [
+      { name: 'Keratin Express', price: '₹2500', time: '90 min' },
+      { name: 'Full Keratin', price: '₹5000', time: '180 min' },
+    ],
+    rebonding: [
+      { name: 'Rebonding (Short)', price: '₹3000', time: '180 min' },
+      { name: 'Rebonding (Long)', price: '₹5000', time: '240 min' },
+    ],
+  },
+  skin: {
+    glow: [
+      { name: 'Gold Facial', price: '₹1200', time: '60 min' },
+      { name: 'Signature Glow', price: '₹2500', time: '90 min' },
+    ],
+    'anti-aging': [
+      { name: 'Anti-Aging Facial', price: '₹1800', time: '75 min' },
+      { name: 'Collagen Boost', price: '₹3000', time: '90 min' },
+    ],
+    'spot reduction': [
+      { name: 'De-Pigmentation', price: '₹1500', time: '60 min' },
+      { name: 'Laser Spot Treatment', price: '₹3500', time: '45 min' },
+    ],
+    hydration: [
+      { name: 'Hydra Facial', price: '₹2000', time: '75 min' },
+      { name: 'Moisture Surge', price: '₹1200', time: '60 min' },
+    ],
+    brightening: [
+      { name: 'Vitamin C Facial', price: '₹1500', time: '60 min' },
+      { name: 'Brightening Peel', price: '₹2000', time: '45 min' },
+    ],
+    'pore tightening': [
+      { name: 'Pore Minimizer', price: '₹1200', time: '60 min' },
+      { name: 'Micro-Needling', price: '₹3000', time: '45 min' },
+    ],
+  },
+  scalp: {
+    default: [
+      { name: 'Scalp Detox', price: '₹600', time: '45 min' },
+      { name: 'Scalp Rejuvenation', price: '₹1200', time: '60 min' },
+      { name: 'Anti-Hair Fall Therapy', price: '₹1800', time: '75 min' },
+      { name: 'PRP Treatment', price: '₹5000', time: '60 min' },
+    ]
+  }
 }
 
 export default function Consultation() {
   const navigate = useNavigate()
-  const { client, consultation, setAiResponses } = useClient()
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const messagesEndRef = useRef(null)
+  const { consultation, setAiResponses } = useClient()
   const category = consultation?.category || 'hair'
+  const flow = CONSULTATION_FLOW[category]
+
+  const [currentStep, setCurrentStep] = useState(0)
+  const [answers, setAnswers] = useState({})
+  const [multiSelections, setMultiSelections] = useState([])
+  const [showResult, setShowResult] = useState(false)
+  const contentRef = useRef(null)
+
+  const step = flow.steps[currentStep]
+  const totalSteps = flow.steps.length
+  const progress = ((currentStep) / totalSteps) * 100
 
   useEffect(() => {
-    setMessages([{ role: 'ai', content: INITIAL_MESSAGES[category] }])
-  }, [category])
+    contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [currentStep])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  const handleOptionSelect = (option) => {
+    if (step.multiSelect) {
+      setMultiSelections(prev =>
+        prev.includes(option.value)
+          ? prev.filter(v => v !== option.value)
+          : [...prev, option.value]
+      )
+    } else {
+      const newAnswers = { ...answers, [step.id]: option.value }
+      setAnswers(newAnswers)
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
-    const userMsg = input.trim()
-    setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
-    setLoading(true)
-
-    try {
-      const res = await chatWithAI({
-        message: userMsg,
-        category,
-        client_name: client?.name,
-        client_age: client?.age,
-        client_gender: client?.gender,
-        history: messages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }))
-      })
-      const aiMsg = res.data.response
-      setMessages(prev => [...prev, { role: 'ai', content: aiMsg }])
-      setAiResponses(prev => [...prev, { question: userMsg, answer: aiMsg }])
-    } catch {
-      // Fallback for demo mode
-      const fallbackResponses = {
-        hair: "Based on what you've described, I'd recommend our Premium Hair Care Treatment. This includes a deep conditioning treatment followed by a professional styling session. Would you like to explore our hair services or would you prefer to take a photo so I can give you visual style recommendations?",
-        skin: "Thank you for sharing that! Based on your skin profile, I'd suggest our Signature Glow Facial which combines deep cleansing with hydration therapy. It's perfect for your skin type. Shall I show you our skin care services, or would you like to capture a photo for a personalized analysis?",
-        scalp: "I understand your concerns. For your scalp condition, I'd recommend our Scalp Rejuvenation Therapy which includes a medicated treatment followed by a soothing massage. Would you like to see our scalp treatment options?"
-      }
-      const aiMsg = fallbackResponses[category]
-      setMessages(prev => [...prev, { role: 'ai', content: aiMsg }])
-      setAiResponses(prev => [...prev, { question: userMsg, answer: aiMsg }])
-    } finally {
-      setLoading(false)
+      setTimeout(() => {
+        if (currentStep < totalSteps - 1) {
+          setCurrentStep(prev => prev + 1)
+        } else {
+          generateResult(newAnswers)
+        }
+      }, 300)
     }
   }
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') sendMessage()
+  const handleMultiContinue = () => {
+    if (multiSelections.length === 0) return
+    const newAnswers = { ...answers, [step.id]: multiSelections.join(', ') }
+    setAnswers(newAnswers)
+    setMultiSelections([])
+
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(prev => prev + 1)
+    } else {
+      generateResult(newAnswers)
+    }
+  }
+
+  const generateResult = (finalAnswers) => {
+    setShowResult(true)
+    const summary = Object.entries(finalAnswers)
+      .map(([key, val]) => `${key.replace(/_/g, ' ')}: ${val}`)
+      .join('\n')
+    setAiResponses(prev => [...prev, {
+      question: 'Consultation Summary',
+      answer: summary
+    }])
+  }
+
+  const getRecommendations = () => {
+    if (category === 'scalp') return RECOMMENDATIONS.scalp.default
+    const goalKey = answers[`${category}_goal`] || Object.keys(RECOMMENDATIONS[category])[0]
+    return RECOMMENDATIONS[category][goalKey] || RECOMMENDATIONS[category][Object.keys(RECOMMENDATIONS[category])[0]]
+  }
+
+  const goBack = () => {
+    if (showResult) {
+      setShowResult(false)
+      setCurrentStep(totalSteps - 1)
+    } else if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1)
+    } else {
+      navigate('/category')
+    }
+  }
+
+  if (showResult) {
+    const recs = getRecommendations()
+    return (
+      <div>
+        <div className="header">
+          <button className="btn-back" onClick={goBack}>
+            <ArrowLeft size={20} />
+          </button>
+          <div style={{ flex: 1 }}>
+            <h1>Your Recommendations</h1>
+            <p>Based on your consultation</p>
+          </div>
+          <Sparkles size={24} color="#C9A84C" />
+        </div>
+
+        <div className="page" style={{ paddingBottom: 120 }}>
+          {/* Summary Cards */}
+          <div className="card card-gold" style={{ marginBottom: 20 }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle2 size={20} color="#4CAF50" /> Consultation Complete
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {Object.entries(answers).map(([key, val]) => (
+                <span key={key} style={{
+                  background: '#f0ead6',
+                  color: '#8B7635',
+                  padding: '6px 12px',
+                  borderRadius: 20,
+                  fontSize: '0.8rem',
+                  fontWeight: 500
+                }}>
+                  {val}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended Services */}
+          <h3 style={{ fontSize: '1.1rem', marginBottom: 16, fontFamily: 'Playfair Display, serif' }}>
+            ✨ Recommended For You
+          </h3>
+          <div className="service-list">
+            {recs.map((svc, i) => (
+              <div key={i} className="service-card" style={{ cursor: 'default' }}>
+                <div style={{
+                  width: 44, height: 44,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #C9A84C, #A88B3D)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 700, fontSize: '0.9rem'
+                }}>
+                  {i + 1}
+                </div>
+                <div className="service-info">
+                  <h4>{svc.name}</h4>
+                  <p>⏱ {svc.time}</p>
+                </div>
+                <span className="service-price">{svc.price}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => navigate('/photo')}>
+              <Camera size={18} /> Take Photo
+            </button>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => navigate('/services')}>
+              Book Now <ChevronRight size={18} />
+            </button>
+          </div>
+
+          <button
+            className="btn btn-secondary"
+            style={{ marginTop: 12 }}
+            onClick={() => navigate('/summary')}
+          >
+            View Full Summary
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div>
       <div className="header">
-        <button className="btn-back" onClick={() => navigate('/category')}>
+        <button className="btn-back" onClick={goBack}>
           <ArrowLeft size={20} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1>AI {category.charAt(0).toUpperCase() + category.slice(1)} Consultant</h1>
-          <p>Personalized recommendations powered by AI</p>
+          <h1>{flow.title}</h1>
+          <p>{flow.subtitle}</p>
         </div>
         <button className="btn-back" onClick={() => navigate('/photo')}>
           <Camera size={20} />
         </button>
       </div>
 
-      <div style={{ padding: '0 24px', paddingBottom: 80 }}>
-        <div className="chat-container">
-          <div className="chat-messages">
-            {messages.map((msg, i) => (
-              <div key={i} className={`chat-bubble ${msg.role}`}>
-                {msg.content}
-              </div>
-            ))}
-            {loading && (
-              <div className="chat-bubble ai">
-                <div className="loading-dots">
-                  <span /><span /><span />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+      {/* Progress Bar */}
+      <div style={{ padding: '0 24px', paddingTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: '0.8rem', color: '#888' }}>
+            Step {currentStep + 1} of {totalSteps}
+          </span>
+          <span style={{ fontSize: '0.8rem', color: '#C9A84C', fontWeight: 600 }}>
+            {Math.round(progress)}%
+          </span>
+        </div>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
 
-          <div className="chat-input-area">
-            <input
-              type="text"
-              placeholder="Describe your needs..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <button className="chat-send-btn" onClick={sendMessage} disabled={loading}>
-              <Send size={20} />
-            </button>
-          </div>
+      {/* Question & Options */}
+      <div className="page" ref={contentRef} style={{ paddingTop: 16, paddingBottom: 120 }}>
+        <h2 style={{
+          fontSize: '1.3rem',
+          marginBottom: 24,
+          fontFamily: 'Playfair Display, serif',
+          lineHeight: 1.4,
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          {step.question}
+        </h2>
+
+        {step.multiSelect && (
+          <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: 16 }}>
+            Select all that apply, then tap Continue
+          </p>
+        )}
+
+        <div className="option-grid">
+          {step.options.map((option) => {
+            const isSelected = step.multiSelect
+              ? multiSelections.includes(option.value)
+              : answers[step.id] === option.value
+
+            return (
+              <button
+                key={option.value}
+                className={`option-chip ${isSelected ? 'selected' : ''}`}
+                onClick={() => handleOptionSelect(option)}
+              >
+                <span className="option-emoji">{option.emoji}</span>
+                <span className="option-label">{option.label}</span>
+                {isSelected && <CheckCircle2 size={18} className="option-check" />}
+              </button>
+            )
+          })}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
-          <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => navigate('/services')}>
-            View Services
+        {step.multiSelect && (
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 24 }}
+            onClick={handleMultiContinue}
+            disabled={multiSelections.length === 0}
+          >
+            Continue <ChevronRight size={18} />
           </button>
-          <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => navigate('/photo')}>
-            Take Photo
-          </button>
-        </div>
+        )}
       </div>
     </div>
   )
