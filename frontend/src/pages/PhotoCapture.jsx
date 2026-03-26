@@ -202,7 +202,7 @@ export default function PhotoCapture() {
         </button>
       </div>
 
-      <div className="page">
+      <div className="page" style={{ paddingBottom: 100 }}>
         {/* Camera / Photo Preview Area */}
         <div className="photo-area">
           {photo ? (
