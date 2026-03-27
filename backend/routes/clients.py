@@ -62,17 +62,17 @@ def update_client_photo(client_id: int, photo_data: dict, db: Session = Depends(
     return {"status": "success", "photo_url": client.photo_url}
 
 
-@router.get("/clients/{client_id}", response_model=ClientResponse)
-def get_client(client_id: int, db: Session = Depends(get_db)):
-    client = db.query(Client).filter(Client.id == client_id).first()
+@router.get("/clients/search")
+def search_client(phone: str, db: Session = Depends(get_db)):
+    client = db.query(Client).filter(Client.mobile == phone).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return client
 
 
-@router.get("/clients/search")
-def search_client(phone: str, db: Session = Depends(get_db)):
-    client = db.query(Client).filter(Client.mobile == phone).first()
+@router.get("/clients/{client_id}", response_model=ClientResponse)
+def get_client(client_id: int, db: Session = Depends(get_db)):
+    client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return client

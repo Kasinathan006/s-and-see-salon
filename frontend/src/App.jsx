@@ -12,12 +12,13 @@ import Dashboard from './pages/Dashboard'
 import TreatmentTracker from './pages/TreatmentTracker'
 import Feedback from './pages/Feedback'
 import TVDisplay from './pages/TVDisplay'
+import LiveHairColor from './pages/LiveHairColor'
 
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
   const isTVMode = location.pathname === '/tv'
-  const showNav = !['/tv', '/', '/register'].includes(location.pathname)
+  const showNav = !['/tv', '/', '/register', '/live-hair'].includes(location.pathname)
 
   return (
     <div className={`app-container ${isTVMode ? 'tv-mode' : ''}`}>
@@ -34,6 +35,7 @@ function App() {
         <Route path="/treatment" element={<TreatmentTracker />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/tv" element={<TVDisplay />} />
+        <Route path="/live-hair" element={<LiveHairColor />} />
       </Routes>
 
       {showNav && (

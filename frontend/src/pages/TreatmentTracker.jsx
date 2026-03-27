@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle, Loader } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle, Loader, Sparkles } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
 import { getClientTreatmentPlan, updateTreatmentProgress } from '../utils/api'
 import toast from 'react-hot-toast'

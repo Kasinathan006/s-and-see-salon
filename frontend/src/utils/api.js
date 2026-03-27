@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -10,7 +10,7 @@ const api = axios.create({
 // Client APIs
 export const registerClient = (data) => api.post('/api/clients', data)
 export const getClient = (id) => api.get(`/api/clients/${id}`)
-export const searchClients = (phone) => api.get(`/api/clients/search?phone=${phone}`)
+export const searchClients = (phone) => api.get(`/api/clients/search?phone=${encodeURIComponent(phone)}`)
 export const updateClientPhoto = (clientId, photoUrl) => api.put(`/api/clients/${clientId}/photo`, { photo_url: photoUrl })
 
 // Consultation APIs
