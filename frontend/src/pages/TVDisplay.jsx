@@ -231,9 +231,11 @@ export default function TVDisplay() {
           const [hr, hg, hb] = style.hairColor
           const intensity = style.intensity
 
+          // Target color luminance — used to shift brightness for lighter hair colors
+          const targetLum = 0.299 * hr + 0.587 * hg + 0.114 * hb
+
           for (let y = 0; y < imgH; y++) {
             for (let x = 0; x < imgW; x++) {
-              // Map image pixel to mask pixel
               const mx = Math.min(Math.floor(x * scaleX), maskW - 1)
               const my = Math.min(Math.floor(y * scaleY), maskH - 1)
               const maskIdx = my * maskW + mx
@@ -245,17 +247,20 @@ export default function TVDisplay() {
                 const g = pixels[idx + 1]
                 const b = pixels[idx + 2]
 
-                // Preserve luminance, apply new color
                 const lum = 0.299 * r + 0.587 * g + 0.114 * b
-                const lumFactor = lum / 128
+
+                // Shift luminance towards target color's brightness
+                const lumShift = targetLum / Math.max(lum, 1)
+                const blendedLum = lum * (1 + (lumShift - 1) * intensity * 0.8)
+                const lumFactor = Math.max(0.15, blendedLum / 128)
 
                 const targetR = Math.min(255, hr * lumFactor)
                 const targetG = Math.min(255, hg * lumFactor)
                 const targetB = Math.min(255, hb * lumFactor)
 
-                pixels[idx] = Math.round(r * (1 - intensity) + targetR * intensity)
-                pixels[idx + 1] = Math.round(g * (1 - intensity) + targetG * intensity)
-                pixels[idx + 2] = Math.round(b * (1 - intensity) + targetB * intensity)
+                pixels[idx] = Math.min(255, Math.round(r * (1 - intensity) + targetR * intensity))
+                pixels[idx + 1] = Math.min(255, Math.round(g * (1 - intensity) + targetG * intensity))
+                pixels[idx + 2] = Math.min(255, Math.round(b * (1 - intensity) + targetB * intensity))
               }
             }
           }
