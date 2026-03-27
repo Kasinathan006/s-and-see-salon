@@ -8,6 +8,7 @@ export function ClientProvider({ children }) {
   const [selectedServices, setSelectedServices] = useState([])
   const [aiResponses, setAiResponses] = useState([])
   const [capturedPhoto, setCapturedPhoto] = useState(null)
+  const [photoAnalysis, setPhotoAnalysis] = useState(null)
 
   const resetSession = () => {
     setClient(null)
@@ -15,6 +16,7 @@ export function ClientProvider({ children }) {
     setSelectedServices([])
     setAiResponses([])
     setCapturedPhoto(null)
+    setPhotoAnalysis(null)
   }
 
   return (
@@ -24,6 +26,7 @@ export function ClientProvider({ children }) {
       selectedServices, setSelectedServices,
       aiResponses, setAiResponses,
       capturedPhoto, setCapturedPhoto,
+      photoAnalysis, setPhotoAnalysis,
       resetSession
     }}>
       {children}

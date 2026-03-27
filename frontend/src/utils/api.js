@@ -22,6 +22,9 @@ export const submitAnswers = (consultationId, data) => api.post(`/api/consultati
 // AI Chat
 export const chatWithAI = (data) => api.post('/api/ai/chat', data)
 
+// AI Photo Analysis
+export const analyzePhoto = (data) => api.post('/api/ai/analyze-photo', data)
+
 // Services
 export const getServices = (category) => api.get(`/api/services?category=${category || ''}`)
 

@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Camera, RotateCcw, Monitor, Upload, Loader } from 'lucide-react'
 import { useClient } from '../context/ClientContext'
-import { updateClientPhoto } from '../utils/api'
+import { updateClientPhoto, analyzePhoto } from '../utils/api'
 import toast from 'react-hot-toast'
 
 export default function PhotoCapture() {
   const navigate = useNavigate()
-  const { setCapturedPhoto, consultation, client } = useClient()
+  const { setCapturedPhoto, consultation, client, setPhotoAnalysis, setConsultation } = useClient()
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -17,6 +17,7 @@ export default function PhotoCapture() {
   const [cameraError, setCameraError] = useState(null)
   const [facingMode, setFacingMode] = useState('user')
   const [uploading, setUploading] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
 
   const category = consultation?.category || 'hair'
 
@@ -139,6 +140,35 @@ export default function PhotoCapture() {
     startCamera(facingMode)
   }
 
+
+  const handleContinue = async () => {
+    if (!photo) return
+    setAnalyzing(true)
+    try {
+      const res = await analyzePhoto({
+        photo,
+        category,
+        client_name: client?.name,
+        client_age: client?.age,
+        client_gender: client?.gender,
+        consultation_answers: consultation?.answers || {}
+      })
+      const analysis = res.data
+      setPhotoAnalysis(analysis)
+      // Update consultation with real accuracy score
+      if (consultation) {
+        setConsultation({ ...consultation, accuracy_score: analysis.accuracy_score })
+      }
+      toast.success('Photo analyzed successfully!')
+      navigate('/summary')
+    } catch (err) {
+      console.error('Photo analysis error:', err)
+      toast.error('Analysis unavailable, continuing...')
+      navigate('/summary')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   const handleShowOnTV = () => {
     if (photo) {
@@ -322,8 +352,8 @@ export default function PhotoCapture() {
               <button className="btn btn-outline" style={{ flex: 1 }} onClick={retake}>
                 <RotateCcw size={18} /> Retake
               </button>
-              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => navigate('/summary')}>
-                Continue
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleContinue} disabled={analyzing}>
+                {analyzing ? <><Loader size={18} className="spin" /> Analyzing...</> : 'Continue'}
               </button>
             </>
           ) : (
@@ -384,11 +414,18 @@ export default function PhotoCapture() {
         {photo && (
           <div className="card card-gold" style={{ marginTop: 24 }}>
             <h3 style={{ fontSize: '1rem', marginBottom: 12 }}>✨ AI Style Suggestions</h3>
-            <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6 }}>
-              {category === 'hair' && 'Based on your face shape and features, we recommend exploring layered cuts for added volume, or a sleek straight style for a polished look. Color options like caramel highlights would complement your skin tone beautifully.'}
-              {category === 'skin' && 'Your skin analysis suggests a combination skin type. We recommend our Signature Glow Facial for overall radiance, with targeted treatment for the T-zone.'}
-              {category === 'scalp' && 'Initial assessment suggests your scalp could benefit from a deep cleansing treatment. We recommend our Scalp Detox followed by a nourishing therapy.'}
-            </p>
+            {analyzing ? (
+              <div style={{ textAlign: 'center', padding: 20 }}>
+                <Loader size={24} className="spin" style={{ color: '#C9A84C' }} />
+                <p style={{ fontSize: '0.85rem', color: '#C9A84C', marginTop: 10 }}>Analyzing your photo...</p>
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6 }}>
+                {category === 'hair' && 'Based on your face shape and features, we recommend exploring layered cuts for added volume, or a sleek straight style for a polished look. Color options like caramel highlights would complement your skin tone beautifully.'}
+                {category === 'skin' && 'Your skin analysis suggests a combination skin type. We recommend our Signature Glow Facial for overall radiance, with targeted treatment for the T-zone.'}
+                {category === 'scalp' && 'Initial assessment suggests your scalp could benefit from a deep cleansing treatment. We recommend our Scalp Detox followed by a nourishing therapy.'}
+              </p>
+            )}
           </div>
         )}
 

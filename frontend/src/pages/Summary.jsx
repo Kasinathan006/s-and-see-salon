@@ -6,10 +6,10 @@ import jsPDF from 'jspdf'
 
 export default function Summary() {
   const navigate = useNavigate()
-  const { client, consultation, selectedServices, aiResponses } = useClient()
+  const { client, consultation, selectedServices, aiResponses, photoAnalysis, capturedPhoto } = useClient()
 
   const total = selectedServices.reduce((sum, s) => sum + s.price, 0)
-  const accuracyScore = consultation?.accuracy_score || 9.5
+  const accuracyScore = photoAnalysis?.accuracy_score || consultation?.accuracy_score || 9.5
 
   const generatePDF = () => {
     const doc = new jsPDF()
@@ -119,6 +119,52 @@ export default function Summary() {
             {accuracyScore}/10 Perfect Match
           </div>
         </div>
+
+        {/* AI Photo Analysis */}
+        {photoAnalysis && (
+          <div className="card card-gold" style={{ marginTop: 16 }}>
+            <div className="summary-section">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>📸</span> AI Photo Analysis
+              </h3>
+              {photoAnalysis.face_shape && (
+                <div className="summary-item">
+                  <span>Face Shape</span>
+                  <strong>{photoAnalysis.face_shape}</strong>
+                </div>
+              )}
+              <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6, margin: '8px 0' }}>
+                {photoAnalysis.analysis_summary}
+              </p>
+              {photoAnalysis.recommendations && (
+                <div style={{ marginTop: 10 }}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#C9A84C', marginBottom: 6 }}>Recommendations:</p>
+                  {photoAnalysis.recommendations.map((rec, i) => (
+                    <p key={i} style={{ fontSize: '0.8rem', color: '#555', lineHeight: 1.5, paddingLeft: 10, marginBottom: 4 }}>
+                      • {rec}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {photoAnalysis.style_suggestions && (
+                <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(201,168,76,0.08)', borderRadius: 8 }}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#C9A84C', marginBottom: 4 }}>Style Advice:</p>
+                  <p style={{ fontSize: '0.8rem', color: '#555', lineHeight: 1.5 }}>{photoAnalysis.style_suggestions}</p>
+                </div>
+              )}
+              {photoAnalysis.suggested_services && (
+                <div style={{ marginTop: 10 }}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#C9A84C', marginBottom: 6 }}>Suggested Services:</p>
+                  {photoAnalysis.suggested_services.map((svc, i) => (
+                    <p key={i} style={{ fontSize: '0.8rem', color: '#555', paddingLeft: 10, marginBottom: 3 }}>
+                      • {svc}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Client Info */}
         <div className="card">
