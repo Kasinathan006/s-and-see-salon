@@ -249,9 +249,10 @@ export default function TVDisplay() {
 
                 const lum = 0.299 * r + 0.587 * g + 0.114 * b
 
-                // Shift luminance towards target color's brightness
-                const lumShift = targetLum / Math.max(lum, 1)
-                const blendedLum = lum * (1 + (lumShift - 1) * intensity * 0.8)
+                // Shift luminance towards target — sqrt dampens extreme shifts to keep texture
+                const rawShift = targetLum / Math.max(lum, 1)
+                const lumShift = Math.min(2.2, Math.max(0.3, Math.sqrt(rawShift)))
+                const blendedLum = lum * (1 + (lumShift - 1) * intensity * 0.6)
                 const lumFactor = Math.max(0.15, blendedLum / 128)
 
                 const targetR = Math.min(255, hr * lumFactor)
