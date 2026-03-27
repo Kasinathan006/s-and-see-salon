@@ -1,4 +1,14 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-gold: #C9A84C;
+  --color-gold-light: #E8D5A3;
+  --color-gold-dark: #A88B3D;
+  --color-dark: #1A1A2E;
+  --color-dark-2: #16213E;
+  --color-dark-3: #0F3460;
+}
 
 :root {
   --gold: #C9A84C;
