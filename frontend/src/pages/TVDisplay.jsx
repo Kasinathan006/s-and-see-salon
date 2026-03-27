@@ -56,6 +56,7 @@ export default function TVDisplay() {
 
   const segmenterRef = useRef(null)
   const searchRef = useRef(null)
+  const clientPhotoRef = useRef(null)
 
   // ===== LOAD MEDIAPIPE SEGMENTATION MODEL =====
   useEffect(() => {
@@ -117,7 +118,8 @@ export default function TVDisplay() {
         const photo = localStorage.getItem('salon_tv_photo')
         const name = localStorage.getItem('salon_tv_client_name')
         const cat = localStorage.getItem('salon_tv_category')
-        if (photo && photo !== clientPhoto) {
+        if (photo && photo !== clientPhotoRef.current) {
+          clientPhotoRef.current = photo
           setClientPhoto(photo)
           setSegmentationMask(null)
           setProcessedImages({})
@@ -155,12 +157,21 @@ export default function TVDisplay() {
             const result = segmenterRef.current.segment(canvas)
             if (result && result.categoryMask) {
               const maskData = result.categoryMask.getAsUint8Array()
-              // Store mask as regular array (MediaPipe mask may get disposed)
               const maskCopy = new Uint8Array(maskData.length)
               maskCopy.set(maskData)
+              const mw = result.categoryMask.width
+              const mh = result.categoryMask.height
+
+              // Debug: count pixels per category
+              const counts = {}
+              for (let i = 0; i < maskCopy.length; i++) {
+                counts[maskCopy[i]] = (counts[maskCopy[i]] || 0) + 1
+              }
+              console.log(`Segmentation done! Mask: ${mw}x${mh}`, 'Categories:', counts)
+              console.log(`Hair pixels: ${counts[1] || 0}, Face-skin: ${counts[3] || 0}, Body: ${counts[2] || 0}`)
+
+              setMaskDimensions({ width: mw, height: mh })
               setSegmentationMask(maskCopy)
-              setMaskDimensions({ width: result.categoryMask.width, height: result.categoryMask.height })
-              console.log(`Segmentation done! Mask: ${result.categoryMask.width}x${result.categoryMask.height}`)
               result.close()
             }
           } catch (segErr) {
